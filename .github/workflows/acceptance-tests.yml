@@ -1,0 +1,44 @@
+name: acceptance-tests
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    actions: read
+    checks: write
+
+jobs:
+    run-all-tests:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v4
+            - name: Set up NodeJS 20 LTS
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20.x
+            - name: Set up k6-to-summary
+              working-directory: ./.github/actions/k6-to-summary
+              run: npm i
+            - name: Install k6
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y gnupg2 curl
+                  curl -s https://dl.k6.io/key.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/k6-archive-keyring.gpg >/dev/null
+                  echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+                  sudo apt-get update
+                  sudo apt-get install -y k6
+            - name: api-test execution
+              if: always()
+              working-directory: tests/
+              run: ./run-api-tests.sh
+            - name: API-Test summary
+              if: always()
+              uses: ./.github/actions/k6-to-summary
+              with:
+                  k6-output-file: "./tests/reports/test-results.xml"
+            - uses: grafana/setup-k6-action@v1
+            - uses: grafana/run-k6-action@v1
+              with:
+                  path: |
+                      ./tests/performance-tests/*.test.js

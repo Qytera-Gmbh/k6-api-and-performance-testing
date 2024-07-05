@@ -1,0 +1,34 @@
+{
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [
+        120
+    ],
+    "files.trimFinalNewlines": true,
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "cSpell.words": [
+        "targetcreated"
+    ],
+    "favorite-urls": {
+        "list": [
+            {
+                "label": "Qytera Github Organization",
+                "url": "https://github.com/Qytera-Gmbh"
+            },
+        ],
+        "sort": true
+    },
+    "java.compile.nullAnalysis.mode": "automatic"
+}

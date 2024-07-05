@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "junit-report-builder": "^3.2.1"
+  }
+}

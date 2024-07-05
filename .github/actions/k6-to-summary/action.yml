@@ -1,0 +1,13 @@
+name: 'K6 to Summary'
+description: 'Write K6 Check output to Github Action Summary'
+inputs:
+  k6-output-file:
+    description: 'k6-output-file'
+    required: true
+  scenario:
+    description: 'scenario number'
+    default: ""
+    required: false
+runs:
+  using: 'node20'
+  main: 'src/index.js'
