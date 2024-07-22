@@ -20,7 +20,6 @@ try {
         const allResults = [];
 
         testsuites.forEach((suite) => {
-            suiteErrorsFound = false;
             const suiteResults = {};
             const testcases = suite.testcase || [];
 
@@ -41,36 +40,42 @@ try {
                     message = testcase.failure[0].$.message;
                 }
                 // Set status
-                const status = failure ? "❌" : (message.length > 1 ? "✅" : "");
+                const status = failure ? "❌" : message.length > 1 ? "✅" : "";
                 suiteResults[groupName].push([testName, testcase.$.name, message + " " + status]);
             });
 
-            // Determine the status for the suite
-            const suiteStatus = suiteErrorsFound ? "❌" : "✅";
-
             // Add suite results to the allResults
-            Object.keys(suiteResults).forEach((partOne) => {
+            Object.entries(suiteResults).forEach(([scenario, result]) => {
                 allResults.push({
-                    partOne,
-                    suiteStatus,
-                    results: suiteResults[partOne],
+                    scenario,
+                    results: result,
                 });
             });
         });
 
-        // Sort allResults first by number and then alphabetically by partOne
+        // Sort allResults first by number and then alphabetically by scenario
         allResults.sort((a, b) => {
-            const aNumber = parseInt(a.partOne.match(/^#(\d+)/)[1]);
-            const bNumber = parseInt(b.partOne.match(/^#(\d+)/)[1]);
+            const aNumber = parseInt(a.scenario.match(/^#(\d+)/)[1]);
+            const bNumber = parseInt(b.scenario.match(/^#(\d+)/)[1]);
             if (aNumber !== bNumber) {
                 return aNumber - bNumber;
             }
-            return a.partOne.localeCompare(b.partOne);
+            return a.scenario.localeCompare(b.scenario);
         });
 
         // Generate the summary
-        allResults.forEach(({ partOne, suiteStatus, results }) => {
-            core.summary.addRaw(`<details><summary>${partOne} - Status: ${suiteStatus}</summary>\n`);
+        let previousNumber = null;
+        allResults.forEach(({ scenario, results }) => {
+            const currentNumber = scenario.match(/^#(\d+)/)[1];
+            if (previousNumber && previousNumber !== currentNumber) {
+                core.summary.addRaw(`<hr>\n`);
+            }
+            previousNumber = currentNumber;
+
+            // Determine the status for all tests under scenario
+            const overallStatus = results.some(([, , status]) => status.includes("❌")) ? "❌" : "✅";
+
+            core.summary.addRaw(`<details><summary>${scenario} - Status: ${overallStatus}</summary>\n`);
 
             // Add table with merged rows under the same group
             const mergedResults = results.reduce((acc, [group, test, status]) => {
@@ -109,8 +114,8 @@ try {
         core.summary.write();
 
         // Set action status based on errors found
-        if (testsuites.some((suite) => suiteErrorsFound)) {
-            core.setFailed("Errors found in the test results: " + suite.testcase);
+        if (suiteErrorsFound) {
+            core.setFailed("Errors found in the test results. See summary for details.");
         }
     });
 } catch (error) {
