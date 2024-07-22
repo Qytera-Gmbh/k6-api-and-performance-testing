@@ -1,0 +1,6 @@
+pandas
+matplotlib
+ipykernel
+nbconvert[webpdf]
+numpy
+scipy
